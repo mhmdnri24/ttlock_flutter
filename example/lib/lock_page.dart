@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ttlock_flutter/ttlock.dart';
 import 'package:bmprogresshud/progresshud.dart';
+import 'card_page.dart';
 
 class LockPage extends StatefulWidget {
   LockPage(
@@ -168,7 +169,7 @@ class _LockPageState extends State<LockPage> {
     {"Modify face": Command.modifyFace},
     {"Delete Face": Command.deleteFace},
     {"Clear Face": Command.clearFace},
-    {"Set Lock Working Time": Command.setLockWorkingTime}
+    // {"Set Lock Working Time": Command.setLockWorkingTime}
   ];
 
   String note =
@@ -776,15 +777,15 @@ class _LockPageState extends State<LockPage> {
           _showErrorAndDismiss(errorCode, errorMsg);
         });
         break;
-      case Command.setLockWorkingTime:
-        var start = DateTime(2025,8,29).millisecond;
-        var end = DateTime(2026,8,29).millisecond;
-        TTLock.setLockWorkingTime(start,end, lockData,() {
-          _showSuccessAndDismiss("set lock working time success");
-        }, (errorCode, errorMsg) {
-          _showErrorAndDismiss(errorCode, errorMsg);
-        });
-        break;
+      // case Command.setLockWorkingTime:
+      //   var start = DateTime(2025,8,29).millisecond;
+      //   var end = DateTime(2026,8,29).millisecond;
+      //   TTLock.setLockWorkingTime(start,end, lockData,() {
+      //     _showSuccessAndDismiss("set lock working time success");
+      //   }, (errorCode, errorMsg) {
+      //     _showErrorAndDismiss(errorCode, errorMsg);
+      //   });
+      //   break;
       default:
     }
   }
@@ -813,7 +814,24 @@ class _LockPageState extends State<LockPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Lock'),
+          title: Text('Lock 1'),
+          actions: [
+            IconButton(
+              tooltip: 'Kelola Kartu IC',
+              icon: const Icon(Icons.credit_card),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CardPage(
+                      lockData: lockData,
+                      lockMac: lockMac,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
         body: Material(child: ProgressHud(
           child: Container(

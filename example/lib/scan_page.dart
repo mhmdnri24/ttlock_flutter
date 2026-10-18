@@ -98,7 +98,7 @@ class _ScanPageState extends State<ScanPage> {
     });
   }
 
-  void _initElectricMeter(TTElectricMeterScanModel scanModel) async {
+    void _initElectricMeter(TTElectricMeterScanModel scanModel) async {
     print("init electric meter：" + scanModel.isInited.toString());
     if (scanModel.isInited) {
       Navigator.push(context,
@@ -116,7 +116,7 @@ class _ScanPageState extends State<ScanPage> {
       initParamMap["number"] = scanModel.name;
       initParamMap["payMode"] = TTMeterPayMode.postpaid.index;
       initParamMap["price"] = '1';
-      TTElectricMeter.init(initParamMap, (int electricMeterId, String featureValue) {
+      TTElectricMeter.init(initParamMap, () {
         _dismissLoading();
         Navigator.push(context,
             new MaterialPageRoute(builder: (BuildContext context) {
@@ -180,8 +180,8 @@ class _ScanPageState extends State<ScanPage> {
     }
   }
 
-  void _initWaterMeter(TTWaterMeterScanModel scanModel) async {
-    print("init electric meter：" + scanModel.isInited.toString());
+    void _initWaterMeter(TTWaterMeterScanModel scanModel) async {
+    print("init water meter：" + scanModel.isInited.toString());
     if (scanModel.isInited) {
       Navigator.push(context,
           new MaterialPageRoute(builder: (BuildContext context) {
@@ -199,7 +199,7 @@ class _ScanPageState extends State<ScanPage> {
       initParamMap["payMode"] = TTMeterPayMode.postpaid.index;
       initParamMap["price"] = '1';
       initParamMap["date"] = DateTime.now().millisecondsSinceEpoch;
-      TTWaterMeter.init(initParamMap, (int waterMeterId, String featureValue) {
+      TTWaterMeter.init(initParamMap, () {
         _dismissLoading();
         Navigator.push(context,
             new MaterialPageRoute(builder: (BuildContext context) {
@@ -357,7 +357,7 @@ class _ScanPageState extends State<ScanPage> {
   @override
   Widget build(BuildContext context) {
     String title = [
-      'Lock',
+      'Lock 1',
       'Gateway',
       'Electric Meter',
       'Key Pad',
@@ -414,11 +414,10 @@ class _ScanPageState extends State<ScanPage> {
                     TTLockScanModel scanModel = _lockList[index];
                     title = 'Lock：${scanModel.lockName}';
                     subtitle = scanModel.isInited
-                        ? 'lock has been inited'
-                        : 'click to init the lock';
-                    if (scanModel.isInited) {
-                      textColor = Colors.grey;
-                    }
+                        ? 'Tap untuk masuk ke Lock'
+                        : 'Tap untuk inisialisasi lock';
+                    // Lock yang sudah di-init tetap berwarna normal (bisa diklik)
+                    textColor = Colors.black;
                   } else if (scanType == ScanType.gateway) {
                     TTGatewayScanModel scanModel = _gatewayList[index];
                     title = 'Gateway：${scanModel.gatewayName}';
@@ -456,8 +455,28 @@ class _ScanPageState extends State<ScanPage> {
                       if (scanType == ScanType.lock) {
                         TTLockScanModel scanModel = _lockList[index];
                         if (!scanModel.isInited) {
+                          // Lock belum di-init → init dulu lalu masuk LockPage
                           TTLock.stopScanLock();
                           _initLock(scanModel);
+                        } else {
+                          // Lock sudah di-init → langsung masuk LockPage
+                          TTLock.stopScanLock();
+                          String lockData = LockConfig.lockData;
+                          String lockMac = scanModel.lockMac;
+                          // Simpan mac terbaru ke config
+                          LockConfig.lockMac = lockMac;
+                          Navigator.push(context,
+                              new MaterialPageRoute(
+                                  builder: (BuildContext context) {
+                            return LockPage(
+                              title: scanModel.lockName,
+                              lockData: lockData,
+                              lockMac: lockMac,
+                            );
+                          })).then((_) {
+                            // Mulai scan lagi setelah kembali dari LockPage
+                            _startScanLock();
+                          });
                         }
                       } else if (scanType == ScanType.gateway) {
                         TTGatewayScanModel scanModel = _gatewayList[index];
