@@ -37,7 +37,7 @@ class _SettingsBody extends HookConsumerWidget {
     final uidCtrl = useTextEditingController(
       text: config.uid > 0 ? '${config.uid}' : '',
     );
-    final passwordCtrl = useTextEditingController(text: config.password ?? '');
+    final passwordCtrl = useTextEditingController(text: config.password ?? 'bdc966046c6f8aebb4c0433c31d066fa');
     final ipCtrl = useTextEditingController(text: config.serverIp ?? '');
     final portCtrl = useTextEditingController(text: config.serverPort ?? '');
     final region = useState(config.serverRegion);

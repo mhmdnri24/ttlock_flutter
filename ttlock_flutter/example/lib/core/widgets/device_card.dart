@@ -10,6 +10,7 @@ class DeviceCard extends StatelessWidget {
   final int? rssi;
   final bool isOnline;
   final bool isInited;
+  final bool hasGateway;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final Widget? trailing;
@@ -28,6 +29,7 @@ class DeviceCard extends StatelessWidget {
     this.rssi,
     this.isOnline = false,
     this.isInited = false,
+    this.hasGateway = false,
     this.onTap,
     this.onLongPress,
     this.trailing,
@@ -83,7 +85,27 @@ class DeviceCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: AppTextStyles.titleMedium),
+        Row(
+          children: [
+            Expanded(child: Text(title, style: AppTextStyles.titleMedium)),
+            if (hasGateway) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Gateway',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
         if (subtitle != null) ...[
           const SizedBox(height: 2),
           Text(subtitle!, style: AppTextStyles.bodySmall),
@@ -130,7 +152,8 @@ class DeviceCard extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text('$clamped%', style: AppTextStyles.labelSmall.copyWith(fontSize: 10)),
+        Text('$clamped%',
+            style: AppTextStyles.labelSmall.copyWith(fontSize: 10)),
       ],
     );
   }

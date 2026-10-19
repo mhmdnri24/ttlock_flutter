@@ -1,10 +1,7 @@
-# 本地 monorepo 开发：覆盖 git 依赖为 path，与 example 联调一致。
+# 本地 monorepo 开发：hanya override platform_interface dan ohos yang ada secara lokal.
+# Android & iOS diambil dari git (folder lokal kosong).
 dependency_overrides:
   ttlock_flutter_platform_interface:
     path: ../ttlock_flutter_platform_interface
-  ttlock_flutter_android:
-    path: ../ttlock_flutter_android
-  ttlock_flutter_ios:
-    path: ../ttlock_flutter_ios
   ttlock_flutter_ohos:
     path: ../ttlock_flutter_ohos

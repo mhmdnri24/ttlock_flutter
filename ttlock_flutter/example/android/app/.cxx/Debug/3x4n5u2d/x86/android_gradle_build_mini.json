@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/capinos/develop/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/capinos/Android/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/capinos/Documents/development/flutter-dev/ttlock-app/ttlock_flutter/ttlock_flutter/example/android/app/.cxx/Debug/3x4n5u2d/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/capinos/Android/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/capinos/Documents/development/flutter-dev/ttlock-app/ttlock_flutter/ttlock_flutter/example/android/app/.cxx/Debug/3x4n5u2d/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

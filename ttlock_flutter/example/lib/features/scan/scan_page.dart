@@ -43,13 +43,13 @@ class ScanPage extends HookConsumerWidget {
           if (state.selectedType != null)
             IconButton(
               icon: Icon(state.isScanning ? Icons.stop : Icons.play_arrow),
-              onPressed: () {
+              onPressed: () async {
                 final notifier =
                     ref.read(scanNotifierProvider(config).notifier);
                 if (state.isScanning) {
-                  notifier.stopScan();
+                  await notifier.stopScan();
                 } else {
-                  notifier.startScan();
+                  await notifier.startScan();
                 }
               },
             ),
@@ -80,9 +80,11 @@ Widget _buildBody(
         const SectionHeader(title: 'Device Type', icon: Icons.category),
         DeviceTypeSelector(
           selected: state.selectedType,
-          onSelected: (type) => ref
-              .read(scanNotifierProvider(config).notifier)
-              .selectType(type),
+          onSelected: (type) async {
+            await ref
+                .read(scanNotifierProvider(config).notifier)
+                .selectType(type);
+          },
         ),
       ],
       if (state.selectedType == null)
@@ -123,11 +125,21 @@ Widget _buildBody(
         )
       else ...[
         SectionHeader(
-          title: 'Results (${state.devices.length})',
+          title: 'Results app (${state.devices.length})',
           icon: Icons.devices,
         ),
         ...state.devices.map((device) {
-          final canTap = !device.isInited || state.config.isAccessory;
+          final canTap = true; //!device.isInited || state.config.isAccessory;
+
+           debugPrint(
+    '[SCAN UI] name=${device.name}, '
+    'mac=${device.mac}, '
+    'type=${device.type}, '
+    'isInited=${device.isInited}, '
+    'isAccessory=${state.config.isAccessory}, '
+    'canTap=$canTap',
+  );
+
           return Opacity(
             opacity: device.isInited && !state.config.isAccessory ? 0.45 : 1,
             child: DeviceCard(
@@ -155,7 +167,7 @@ Future<void> _onDeviceTap(
   DiscoveredDevice device,
 ) async {
   if (device.type == DeviceType.gateway) {
-    ref.read(scanNotifierProvider(config).notifier).stopScan();
+    await ref.read(scanNotifierProvider(config).notifier).stopScan();
     final gatewayType = device.gatewayType ?? TTGatewayType.g2;
     GatewayInitRoute(
       device.mac,
@@ -167,27 +179,38 @@ Future<void> _onDeviceTap(
   }
 
   if (device.type == DeviceType.standaloneDoorSensor) {
-    ref.read(scanNotifierProvider(config).notifier).stopScan();
+    await ref.read(scanNotifierProvider(config).notifier).stopScan();
     StandaloneDoorSensorInitRoute(device.mac, name: device.name).push(context);
     return;
   }
 
   if (device.type == DeviceType.waterMeter) {
-    ref.read(scanNotifierProvider(config).notifier).stopScan();
+    await ref.read(scanNotifierProvider(config).notifier).stopScan();
     WaterMeterInitRoute(device.mac, name: device.name).push(context);
     return;
   }
 
   if (device.type == DeviceType.electricMeter) {
-    ref.read(scanNotifierProvider(config).notifier).stopScan();
+    await ref.read(scanNotifierProvider(config).notifier).stopScan();
     ElectricMeterInitRoute(device.mac, name: device.name).push(context);
     return;
   }
+  print('[TAP] Device tapped: ${device.mac}');
+print('[TAP] Type: ${device.type}');
+print('[TAP] isInited: ${device.isInited}');
 
+
+  await ref.read(scanNotifierProvider(config).notifier).stopScan();
   context.loaderOverlay.show();
   final result = await ref
       .read(scanNotifierProvider(config).notifier)
       .initDevice(device);
+
+      if (result is InitFailure) {
+  print('[TAP] INIT FAILURE MESSAGE: ${result.message}');
+} else {
+  print('[TAP] Init result: $result');
+}
   if (!context.mounted) return;
   context.loaderOverlay.hide();
 

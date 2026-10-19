@@ -1,0 +1,6 @@
+module ttlock_flutter {
+  umbrella header "ttlock_flutter-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,2 @@
+/Users/capinos/Documents/development/flutter-dev/ttlock-app/ttlock_flutter/ttlock_flutter/example/android/app/.cxx/Debug/3x4n5u2d/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/capinos/Documents/development/flutter-dev/ttlock-app/ttlock_flutter/ttlock_flutter/example/android/app/.cxx/Debug/3x4n5u2d/armeabi-v7a/CMakeFiles/rebuild_cache.dir

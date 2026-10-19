@@ -18,6 +18,10 @@ mixin _$SavedLockDevice {
   String get name;
   String get mac;
   String get lockData;
+  String? get lockAlias;
+  int? get battery;
+  int? get hasGateway;
+  String? get groupName;
   int get protocolType;
   int get protocolVersion;
   int get scene;
@@ -45,6 +49,13 @@ mixin _$SavedLockDevice {
             (identical(other.mac, mac) || other.mac == mac) &&
             (identical(other.lockData, lockData) ||
                 other.lockData == lockData) &&
+            (identical(other.lockAlias, lockAlias) ||
+                other.lockAlias == lockAlias) &&
+            (identical(other.battery, battery) || other.battery == battery) &&
+            (identical(other.hasGateway, hasGateway) ||
+                other.hasGateway == hasGateway) &&
+            (identical(other.groupName, groupName) ||
+                other.groupName == groupName) &&
             (identical(other.protocolType, protocolType) ||
                 other.protocolType == protocolType) &&
             (identical(other.protocolVersion, protocolVersion) ||
@@ -58,12 +69,25 @@ mixin _$SavedLockDevice {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, name, mac, lockData,
-      protocolType, protocolVersion, scene, groupId, orgId, initializedAt);
+  int get hashCode => Object.hash(
+      runtimeType,
+      name,
+      mac,
+      lockData,
+      lockAlias,
+      battery,
+      hasGateway,
+      groupName,
+      protocolType,
+      protocolVersion,
+      scene,
+      groupId,
+      orgId,
+      initializedAt);
 
   @override
   String toString() {
-    return 'SavedLockDevice(name: $name, mac: $mac, lockData: $lockData, protocolType: $protocolType, protocolVersion: $protocolVersion, scene: $scene, groupId: $groupId, orgId: $orgId, initializedAt: $initializedAt)';
+    return 'SavedLockDevice(name: $name, mac: $mac, lockData: $lockData, lockAlias: $lockAlias, battery: $battery, hasGateway: $hasGateway, groupName: $groupName, protocolType: $protocolType, protocolVersion: $protocolVersion, scene: $scene, groupId: $groupId, orgId: $orgId, initializedAt: $initializedAt)';
   }
 }
 
@@ -77,6 +101,10 @@ abstract mixin class $SavedLockDeviceCopyWith<$Res> {
       {String name,
       String mac,
       String lockData,
+      String? lockAlias,
+      int? battery,
+      int? hasGateway,
+      String? groupName,
       int protocolType,
       int protocolVersion,
       int scene,
@@ -101,6 +129,10 @@ class _$SavedLockDeviceCopyWithImpl<$Res>
     Object? name = null,
     Object? mac = null,
     Object? lockData = null,
+    Object? lockAlias = freezed,
+    Object? battery = freezed,
+    Object? hasGateway = freezed,
+    Object? groupName = freezed,
     Object? protocolType = null,
     Object? protocolVersion = null,
     Object? scene = null,
@@ -121,6 +153,22 @@ class _$SavedLockDeviceCopyWithImpl<$Res>
           ? _self.lockData
           : lockData // ignore: cast_nullable_to_non_nullable
               as String,
+      lockAlias: freezed == lockAlias
+          ? _self.lockAlias
+          : lockAlias // ignore: cast_nullable_to_non_nullable
+              as String?,
+      battery: freezed == battery
+          ? _self.battery
+          : battery // ignore: cast_nullable_to_non_nullable
+              as int?,
+      hasGateway: freezed == hasGateway
+          ? _self.hasGateway
+          : hasGateway // ignore: cast_nullable_to_non_nullable
+              as int?,
+      groupName: freezed == groupName
+          ? _self.groupName
+          : groupName // ignore: cast_nullable_to_non_nullable
+              as String?,
       protocolType: null == protocolType
           ? _self.protocolType
           : protocolType // ignore: cast_nullable_to_non_nullable
@@ -156,6 +204,10 @@ class _SavedLockDevice extends SavedLockDevice {
       {required this.name,
       required this.mac,
       required this.lockData,
+      this.lockAlias,
+      this.battery,
+      this.hasGateway,
+      this.groupName,
       this.protocolType = 5,
       this.protocolVersion = 3,
       this.scene = 2,
@@ -172,6 +224,14 @@ class _SavedLockDevice extends SavedLockDevice {
   final String mac;
   @override
   final String lockData;
+  @override
+  final String? lockAlias;
+  @override
+  final int? battery;
+  @override
+  final int? hasGateway;
+  @override
+  final String? groupName;
   @override
   @JsonKey()
   final int protocolType;
@@ -214,6 +274,13 @@ class _SavedLockDevice extends SavedLockDevice {
             (identical(other.mac, mac) || other.mac == mac) &&
             (identical(other.lockData, lockData) ||
                 other.lockData == lockData) &&
+            (identical(other.lockAlias, lockAlias) ||
+                other.lockAlias == lockAlias) &&
+            (identical(other.battery, battery) || other.battery == battery) &&
+            (identical(other.hasGateway, hasGateway) ||
+                other.hasGateway == hasGateway) &&
+            (identical(other.groupName, groupName) ||
+                other.groupName == groupName) &&
             (identical(other.protocolType, protocolType) ||
                 other.protocolType == protocolType) &&
             (identical(other.protocolVersion, protocolVersion) ||
@@ -227,12 +294,25 @@ class _SavedLockDevice extends SavedLockDevice {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, name, mac, lockData,
-      protocolType, protocolVersion, scene, groupId, orgId, initializedAt);
+  int get hashCode => Object.hash(
+      runtimeType,
+      name,
+      mac,
+      lockData,
+      lockAlias,
+      battery,
+      hasGateway,
+      groupName,
+      protocolType,
+      protocolVersion,
+      scene,
+      groupId,
+      orgId,
+      initializedAt);
 
   @override
   String toString() {
-    return 'SavedLockDevice(name: $name, mac: $mac, lockData: $lockData, protocolType: $protocolType, protocolVersion: $protocolVersion, scene: $scene, groupId: $groupId, orgId: $orgId, initializedAt: $initializedAt)';
+    return 'SavedLockDevice(name: $name, mac: $mac, lockData: $lockData, lockAlias: $lockAlias, battery: $battery, hasGateway: $hasGateway, groupName: $groupName, protocolType: $protocolType, protocolVersion: $protocolVersion, scene: $scene, groupId: $groupId, orgId: $orgId, initializedAt: $initializedAt)';
   }
 }
 
@@ -248,6 +328,10 @@ abstract mixin class _$SavedLockDeviceCopyWith<$Res>
       {String name,
       String mac,
       String lockData,
+      String? lockAlias,
+      int? battery,
+      int? hasGateway,
+      String? groupName,
       int protocolType,
       int protocolVersion,
       int scene,
@@ -272,6 +356,10 @@ class __$SavedLockDeviceCopyWithImpl<$Res>
     Object? name = null,
     Object? mac = null,
     Object? lockData = null,
+    Object? lockAlias = freezed,
+    Object? battery = freezed,
+    Object? hasGateway = freezed,
+    Object? groupName = freezed,
     Object? protocolType = null,
     Object? protocolVersion = null,
     Object? scene = null,
@@ -292,6 +380,22 @@ class __$SavedLockDeviceCopyWithImpl<$Res>
           ? _self.lockData
           : lockData // ignore: cast_nullable_to_non_nullable
               as String,
+      lockAlias: freezed == lockAlias
+          ? _self.lockAlias
+          : lockAlias // ignore: cast_nullable_to_non_nullable
+              as String?,
+      battery: freezed == battery
+          ? _self.battery
+          : battery // ignore: cast_nullable_to_non_nullable
+              as int?,
+      hasGateway: freezed == hasGateway
+          ? _self.hasGateway
+          : hasGateway // ignore: cast_nullable_to_non_nullable
+              as int?,
+      groupName: freezed == groupName
+          ? _self.groupName
+          : groupName // ignore: cast_nullable_to_non_nullable
+              as String?,
       protocolType: null == protocolType
           ? _self.protocolType
           : protocolType // ignore: cast_nullable_to_non_nullable

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:toastification/toastification.dart';
 import 'package:ttlock_flutter/ttlock.dart';
-
+import 'package:permission_handler/permission_handler.dart';
 import '../../core/storage/accessory_list_provider.dart';
 import '../../core/storage/lock_list_provider.dart';
 import '../../features/settings/model/saved_door_sensor.dart';
@@ -68,184 +68,207 @@ class ScanNotifier extends _$ScanNotifier {
 
   @override
   ScanState build(ScanConfig config) {
-    ref.onDispose(_cancelAll);
+    ref.onDispose(() {
+      unawaited(_cancelAll());
+    });
     return ScanState(config: config, selectedType: config.deviceType);
   }
 
-  void selectType(DeviceType type) {
-    stopScan();
+  Future<void> selectType(DeviceType type) async {
+    await stopScan();
     state = ScanState(
       config: state.config,
       selectedType: type,
       devices: const [],
     );
-    startScan();
+    await startScan();
   }
 
-  Future<void> startScan() async {
-    final type = state.selectedType;
-    if (type == null) return;
-    stopScan();
+  
+Future<void> startScan() async {
+  final type = state.selectedType;
+  if (type == null) return;
+
+  // Minta izin Bluetooth sebelum memulai scan.
+  final scanStatus = await Permission.bluetoothScan.request();
+  final connectStatus = await Permission.bluetoothConnect.request();
+
+  if (!scanStatus.isGranted || !connectStatus.isGranted) {
+    state = ScanState(
+      config: state.config,
+      selectedType: type,
+      isScanning: false,
+      devices: const [],
+      error: 'Bluetooth permission denied. Please allow Bluetooth access in app settings.',
+    );
+    return;
+  }
+
+  // Hentikan scan sebelumnya setelah izin tersedia.
+  await stopScan();
+
+  state = ScanState(
+    config: state.config,
+    selectedType: type,
+    isScanning: true,
+    devices: const [],
+  );
+
+  final devices = <DiscoveredDevice>[];
+
+  void update() {
     state = ScanState(
       config: state.config,
       selectedType: type,
       isScanning: true,
-      devices: const [],
+      devices: List.from(devices),
     );
-    final devices = <DiscoveredDevice>[];
-
-    void update() {
-      state = ScanState(
-        config: state.config,
-        selectedType: type,
-        isScanning: true,
-        devices: List.from(devices),
-      );
-    }
-
-    void onError(Object e) {
-      state = ScanState(
-        config: state.config,
-        selectedType: type,
-        isScanning: false,
-        devices: state.devices,
-        error: e.toString(),
-      );
-    }
-
-    switch (type) {
-      case DeviceType.lock:
-        _subs.add(TTLock.lock.lockScanLock().listen(
-          (m) {
-            devices.removeWhere((d) => d.mac == m.lockMac);
-            devices.add(DiscoveredDevice(
-              type: DeviceType.lock,
-              name: m.lockName,
-              mac: m.lockMac,
-              rssi: m.rssi,
-              isInited: m.isInited,
-              lockVersion: m.lockVersion,
-            ));
-            devices.sort((a, b) => (a.isInited ? 1 : 0) - (b.isInited ? 1 : 0));
-            update();
-          },
-          onError: onError,
-        ));
-        break;
-      case DeviceType.gateway:
-        _subs.add(TTLock.gateway.gatewayStartScan().listen(
-          (m) {
-            devices.removeWhere((d) => d.mac == m.gatewayMac);
-            devices.add(DiscoveredDevice(
-              type: DeviceType.gateway,
-              name: m.gatewayName,
-              mac: m.gatewayMac,
-              rssi: m.rssi,
-              gatewayType: m.type,
-            ));
-            update();
-          },
-          onError: onError,
-        ));
-        break;
-      case DeviceType.doorSensor:
-        _subs.add(TTLock.doorSensor.accessoryStartScanDoorSensor().listen(
-          (m) {
-            devices.removeWhere((d) => d.mac == m.mac);
-            devices.add(DiscoveredDevice(
-              type: DeviceType.doorSensor,
-              name: m.name,
-              mac: m.mac,
-              rssi: m.rssi,
-            ));
-            update();
-          },
-          onError: onError,
-        ));
-        break;
-      case DeviceType.standaloneDoorSensor:
-        _subs.add(
-            TTLock.doorSensor.accessoryStandaloneDoorSensorStartScan().listen(
-          (m) {
-            devices.removeWhere((d) => d.mac == m.mac);
-            devices.add(DiscoveredDevice(
-              type: DeviceType.standaloneDoorSensor,
-              name: m.name,
-              mac: m.mac,
-              rssi: m.rssi,
-            ));
-            update();
-          },
-          onError: onError,
-        ));
-        break;
-      case DeviceType.remoteKey:
-        _subs.add(TTLock.remoteKey.accessoryStartScanRemoteKey().listen(
-          (m) {
-            devices.removeWhere((d) => d.mac == m.mac);
-            devices.add(DiscoveredDevice(
-              type: DeviceType.remoteKey,
-              name: m.name,
-              mac: m.mac,
-              rssi: m.rssi,
-            ));
-            update();
-          },
-          onError: onError,
-        ));
-        break;
-      case DeviceType.keypad:
-        _subs.add(TTLock.remoteKeypad.accessoryStartScanRemoteKeypad().listen(
-          (m) {
-            devices.removeWhere((d) => d.mac == m.mac);
-            devices.add(DiscoveredDevice(
-              type: DeviceType.keypad,
-              name: m.name,
-              mac: m.mac,
-              rssi: m.rssi,
-              isMultifunctionalKeypad: m.isMultifunctionalKeypad,
-            ));
-            update();
-          },
-          onError: onError,
-        ));
-        break;
-      case DeviceType.waterMeter:
-        _subs.add(TTLock.waterMeter.accessoryWaterMeterStartScan().listen(
-          (m) {
-            devices.removeWhere((d) => d.mac == m.mac);
-            devices.add(DiscoveredDevice(
-              type: DeviceType.waterMeter,
-              name: m.name,
-              mac: m.mac,
-              rssi: m.rssi,
-            ));
-            update();
-          },
-          onError: onError,
-        ));
-        break;
-      case DeviceType.electricMeter:
-        _subs.add(
-            TTLock.electricMeter.accessoryElectricMeterStartScan().listen(
-          (m) {
-            devices.removeWhere((d) => d.mac == m.mac);
-            devices.add(DiscoveredDevice(
-              type: DeviceType.electricMeter,
-              name: m.name,
-              mac: m.mac,
-              rssi: m.rssi,
-            ));
-            update();
-          },
-          onError: onError,
-        ));
-        break;
-    }
   }
 
-  void stopScan() {
-    _cancelAll();
+  void onError(Object e) {
+    state = ScanState(
+      config: state.config,
+      selectedType: type,
+      isScanning: false,
+      devices: state.devices,
+      error: e.toString(),
+    );
+  }
+
+  switch (type) {
+    case DeviceType.lock:
+      _subs.add(TTLock.lock.lockScanLock().listen(
+        (m) {
+          devices.removeWhere((d) => d.mac == m.lockMac);
+          devices.add(DiscoveredDevice(
+            type: DeviceType.lock,
+            name: m.lockName,
+            mac: m.lockMac,
+            rssi: m.rssi,
+            isInited: m.isInited,
+            lockVersion: m.lockVersion,
+          ));
+          devices.sort((a, b) => (a.isInited ? 1 : 0) - (b.isInited ? 1 : 0));
+          update();
+        },
+        onError: onError,
+      ));
+      break;
+    case DeviceType.gateway:
+      _subs.add(TTLock.gateway.gatewayStartScan().listen(
+        (m) {
+          devices.removeWhere((d) => d.mac == m.gatewayMac);
+          devices.add(DiscoveredDevice(
+            type: DeviceType.gateway,
+            name: m.gatewayName,
+            mac: m.gatewayMac,
+            rssi: m.rssi,
+            gatewayType: m.type,
+          ));
+          update();
+        },
+        onError: onError,
+      ));
+      break;
+    case DeviceType.doorSensor:
+      _subs.add(TTLock.doorSensor.accessoryStartScanDoorSensor().listen(
+        (m) {
+          devices.removeWhere((d) => d.mac == m.mac);
+          devices.add(DiscoveredDevice(
+            type: DeviceType.doorSensor,
+            name: m.name,
+            mac: m.mac,
+            rssi: m.rssi,
+          ));
+          update();
+        },
+        onError: onError,
+      ));
+      break;
+    case DeviceType.standaloneDoorSensor:
+      _subs.add(
+          TTLock.doorSensor.accessoryStandaloneDoorSensorStartScan().listen(
+        (m) {
+          devices.removeWhere((d) => d.mac == m.mac);
+          devices.add(DiscoveredDevice(
+            type: DeviceType.standaloneDoorSensor,
+            name: m.name,
+            mac: m.mac,
+            rssi: m.rssi,
+          ));
+          update();
+        },
+        onError: onError,
+      ));
+      break;
+    case DeviceType.remoteKey:
+      _subs.add(TTLock.remoteKey.accessoryStartScanRemoteKey().listen(
+        (m) {
+          devices.removeWhere((d) => d.mac == m.mac);
+          devices.add(DiscoveredDevice(
+            type: DeviceType.remoteKey,
+            name: m.name,
+            mac: m.mac,
+            rssi: m.rssi,
+          ));
+          update();
+        },
+        onError: onError,
+      ));
+      break;
+    case DeviceType.keypad:
+      _subs.add(TTLock.remoteKeypad.accessoryStartScanRemoteKeypad().listen(
+        (m) {
+          devices.removeWhere((d) => d.mac == m.mac);
+          devices.add(DiscoveredDevice(
+            type: DeviceType.keypad,
+            name: m.name,
+            mac: m.mac,
+            rssi: m.rssi,
+            isMultifunctionalKeypad: m.isMultifunctionalKeypad,
+          ));
+          update();
+        },
+        onError: onError,
+      ));
+      break;
+    case DeviceType.waterMeter:
+      _subs.add(TTLock.waterMeter.accessoryWaterMeterStartScan().listen(
+        (m) {
+          devices.removeWhere((d) => d.mac == m.mac);
+          devices.add(DiscoveredDevice(
+            type: DeviceType.waterMeter,
+            name: m.name,
+            mac: m.mac,
+            rssi: m.rssi,
+          ));
+          update();
+        },
+        onError: onError,
+      ));
+      break;
+    case DeviceType.electricMeter:
+      _subs.add(
+          TTLock.electricMeter.accessoryElectricMeterStartScan().listen(
+        (m) {
+          devices.removeWhere((d) => d.mac == m.mac);
+          devices.add(DiscoveredDevice(
+            type: DeviceType.electricMeter,
+            name: m.name,
+            mac: m.mac,
+            rssi: m.rssi,
+          ));
+          update();
+        },
+        onError: onError,
+      ));
+      break;
+  }
+}
+
+
+  Future<void> stopScan() async {
+    await _cancelAll();
     state = ScanState(
       config: state.config,
       selectedType: state.selectedType,
@@ -254,11 +277,12 @@ class ScanNotifier extends _$ScanNotifier {
     );
   }
 
-  void _cancelAll() {
-    for (final s in _subs) {
-      s.cancel();
-    }
+  Future<void> _cancelAll() async {
+    final subscriptions = List<StreamSubscription<dynamic>>.from(_subs);
     _subs.clear();
+    await Future.wait(
+      subscriptions.map((subscription) => subscription.cancel()),
+    );
   }
 
   Future<InitResult> initDevice(DiscoveredDevice device) async {
@@ -269,6 +293,14 @@ class ScanNotifier extends _$ScanNotifier {
           if (device.lockVersion == null) {
             return InitResult.failure('Lock version missing');
           }
+
+           print('=== TTLOCK INIT DEBUG ===');
+  print('Name: ${device.name}');
+  print('MAC: ${device.mac}');
+  print('isInited: ${device.isInited}');
+  print('lockVersion: ${device.lockVersion}');
+  print('=========================');
+  
           final api = TTLock.lock;
           final lockData = await api.initLock(TTLockInitParams(
             lockMac: device.mac,

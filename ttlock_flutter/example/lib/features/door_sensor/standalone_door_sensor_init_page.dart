@@ -278,7 +278,7 @@ class StandaloneDoorSensorInitPage extends HookConsumerWidget {
                   TextField(
                     controller: wifiPwdCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Password',
+                      labelText: 'Password.',
                       hintText: 'WiFi password',
                     ),
                     obscureText: true,

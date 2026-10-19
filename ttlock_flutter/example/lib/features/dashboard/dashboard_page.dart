@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../core/env/app_mode.dart';
 import '../../core/router/routes.dart';
 import '../../core/storage/accessory_list_provider.dart';
 import '../../core/storage/lock_list_provider.dart';
@@ -9,6 +10,8 @@ import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/device_card.dart';
 import '../../features/scan/scan_config.dart';
 import '../../features/lock/lock_status_provider.dart';
+import '../../features/lock/remote_lock_api_service.dart';
+import '../../features/lock/remote_lock_list_provider.dart';
 import '../../features/settings/model/saved_gateway_device.dart';
 import '../../features/settings/model/saved_lock_device.dart';
 import '../../features/settings/model/saved_meter_device.dart';
@@ -62,14 +65,12 @@ class DashboardPage extends HookConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.water_drop),
                     title: const Text('Water Meter'),
-                    onTap: () =>
-                        Navigator.pop(ctx, DeviceType.waterMeter),
+                    onTap: () => Navigator.pop(ctx, DeviceType.waterMeter),
                   ),
                   ListTile(
                     leading: const Icon(Icons.bolt),
                     title: const Text('Electric Meter'),
-                    onTap: () =>
-                        Navigator.pop(ctx, DeviceType.electricMeter),
+                    onTap: () => Navigator.pop(ctx, DeviceType.electricMeter),
                   ),
                 ],
               ),
@@ -138,6 +139,96 @@ class _LockList extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (AppEnv.isOnline) {
+      final remoteLocksAsync = ref.watch(remoteLockListProvider);
+
+      Future<void> refreshRemoteLocks() async {
+        await ref.read(remoteLockListProvider.notifier).refresh();
+        ref.invalidate(dashboardNotifierProvider);
+      }
+
+      return remoteLocksAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  error is LockApiException
+                      ? error.toString()
+                      : 'Could not load locks. Check your connection and try again.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: refreshRemoteLocks,
+                  child: const Text('Try again'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        data: (remoteLocks) => RefreshIndicator(
+          onRefresh: refreshRemoteLocks,
+          child: remoteLocks.isEmpty
+              ? ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.sizeOf(context).height * 0.55,
+                      child:
+                          _emptyState('No locks found in your TTLock account.'),
+                    ),
+                  ],
+                )
+              : ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: remoteLocks.length,
+                  itemBuilder: (_, i) {
+                    final lock = remoteLocks[i];
+                    final localLock = locks
+                        .where(
+                          (local) =>
+                              local.mac.toUpperCase() == lock.mac.toUpperCase(),
+                        )
+                        .firstOrNull;
+                    final lockMac = localLock?.mac ?? lock.mac;
+                    final accessoryCounts =
+                        ref.watch(accessoryCountsProvider(lockMac));
+                    final counts = accessoryCounts.valueOrNull;
+                    final parts = <String>[];
+                    if (counts != null) {
+                      if (counts.doorSensors > 0) {
+                        parts.add('Door:${counts.doorSensors}');
+                      }
+                      if (counts.remoteKeys > 0) {
+                        parts.add('Remote:${counts.remoteKeys}');
+                      }
+                      if (counts.keypads > 0) {
+                        parts.add('Keypad:${counts.keypads}');
+                      }
+                    }
+                    return DeviceCard(
+                      title: lock.name,
+                      subtitle: lock.groupName,
+                      mac: lockMac,
+                      icon: Icons.lock,
+                      isOnline: true,
+                      power: lock.battery,
+                      accessoryInfo: parts.isNotEmpty ? parts.join('  ') : null,
+                      hasGateway: lock.hasGateway == 1,
+                      isInited: true,
+                      onTap: () => LockRoute(lockMac).push(context),
+                    );
+                  },
+                ),
+        ),
+      );
+    }
+
     if (locks.isEmpty) return _emptyState('No locks yet. Tap + to scan.');
 
     return RefreshIndicator(
@@ -200,7 +291,8 @@ class _GatewayList extends StatelessWidget {
         final gw = gateways[i];
         return DeviceCard(
           title: gw.name,
-          subtitle: gw.gatewayModel.isNotEmpty ? 'Model: ${gw.gatewayModel}' : null,
+          subtitle:
+              gw.gatewayModel.isNotEmpty ? 'Model: ${gw.gatewayModel}' : null,
           mac: gw.mac,
           icon: Icons.router,
           isOnline: true,
@@ -276,7 +368,8 @@ class _StandaloneDoorSensorList extends StatelessWidget {
         final sensor = sensors[i];
         return DeviceCard(
           title: sensor.name,
-          subtitle: sensor.modelNum != null ? 'Model: ${sensor.modelNum}' : null,
+          subtitle:
+              sensor.modelNum != null ? 'Model: ${sensor.modelNum}' : null,
           mac: sensor.mac,
           icon: Icons.sensors,
           power: sensor.electricQuantity,

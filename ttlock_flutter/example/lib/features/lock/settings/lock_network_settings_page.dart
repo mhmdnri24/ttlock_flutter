@@ -57,7 +57,7 @@ class LockNetworkSettingsPage extends HookConsumerWidget {
           ),
           TextField(
             controller: wifiPasswordController,
-            decoration: const InputDecoration(labelText: 'Password'),
+            decoration: const InputDecoration(labelText: 'Password.'),
             obscureText: true,
           ),
           FilledButton(

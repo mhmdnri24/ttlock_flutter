@@ -27,6 +27,25 @@ class LockListNotifier extends _$LockListNotifier {
     ref.invalidateSelf();
   }
 
+  Future<void> mergeRemoteDevices(List<SavedLockDevice> remoteDevices) async {
+    final devices = await _lockStorage.load();
+    for (final remote in remoteDevices) {
+      final index = devices.indexWhere(
+        (local) => local.mac.toUpperCase() == remote.mac.toUpperCase(),
+      );
+      if (index == -1) {
+        devices.add(remote);
+      } else {
+        devices[index] = remote.copyWith(
+          mac: devices[index].mac,
+          initializedAt: devices[index].initializedAt,
+        );
+      }
+    }
+    await _lockStorage.save(devices);
+    ref.invalidateSelf();
+  }
+
   Future<void> removeDevice(String mac) async {
     final list = (state.valueOrNull ?? []).where((d) => d.mac != mac).toList();
     await _lockStorage.save(list);

@@ -1,0 +1,42 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    xmlns:tools="http://schemas.android.com/tools"
+4    package="com.ttlock.ttlock_flutter" >
+5
+6    <uses-sdk android:minSdkVersion="18" />
+7    <!--
+8 Needed only if your app looks for Bluetooth devices.
+9         You must add an attribute to this permission, or declare the
+10         ACCESS_FINE_LOCATION permission, depending on the results when you
+11         check location usage in your app.
+12    -->
+13    <uses-permission android:name="android.permission.BLUETOOTH" />
+13-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:9:5-68
+13-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:9:22-65
+14    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+14-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:10:5-74
+14-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:10:22-71
+15    <uses-permission
+15-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:11:5-14:31
+16        android:name="android.permission.BLUETOOTH_SCAN"
+16-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:12:9-57
+17        android:usesPermissionFlags="neverForLocation"
+17-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:13:9-55
+18        tools:targetApi="s" />
+18-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:14:9-28
+19    <!--
+20 Needed only if your app makes the device discoverable to Bluetooth
+21         devices.
+22    -->
+23    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+23-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:19:5-78
+23-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:19:22-75
+24    <!--
+25 Needed only if your app communicates with already-paired Bluetooth
+26         devices.
+27    -->
+28    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+28-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:24:5-76
+28-->/Users/capinos/.pub-cache/hosted/pub.dev/ttlock_flutter-0.3.8/android/src/main/AndroidManifest.xml:24:22-73
+29
+30</manifest>
